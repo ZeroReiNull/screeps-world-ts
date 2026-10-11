@@ -1,28 +1,32 @@
-import { MemoryManager } from "./core/MemoryManager";
-import { SpawnManager } from "./managers/SpawnManager";
-import { RoleHarvester } from "./roles/Harvester";
+import { memory } from './core/memory';
+import { spawn } from './core/spawn';
+import { RoleWorker } from './roles/RoleWorker';
+import { RoleMiner } from './roles/RoleMiner';
+import { ROLE_WORKER, ROLE_MINER } from './config';
 
-// Global loop export required by Screeps
-export const loop = function () {
-    // 1. Core system execution (Garbage Collection)
-    MemoryManager.clearDeadCreeps();
+export function loop(): void {
+    // 1. Maintain memory hygiene
+    memory.clearDeadCreeps();
 
-    // 2. Room-level scheduling (Building planning, spawn queue)
-    for (const roomName in Game.rooms) {
-        const room = Game.rooms[roomName];
-        SpawnManager.run(room);
+    // 2. Drive spawning operations across all visible rooms
+    for (const spawnName in Game.spawns) {
+        spawn.run(Game.spawns[spawnName]);
     }
 
-    // 3. Entity-level scheduling (Dispatching Creep actions)
+    // 3. Execute creep behavioral logic
     for (const name in Game.creeps) {
         const creep = Game.creeps[name];
-        
+        if (creep.spawning) continue;
+
         switch (creep.memory.role) {
-            case 'harvester':
-                RoleHarvester.run(creep);
+            case ROLE_WORKER:
+                RoleWorker.run(creep);
                 break;
-            // You can add more cases later: case 'upgrader': RoleUpgrader.run(creep);
-            // And case 'builder', etc...
+            case ROLE_MINER:
+                RoleMiner.run(creep);
+                break;
+            default:
+                break;
         }
     }
-};
+}

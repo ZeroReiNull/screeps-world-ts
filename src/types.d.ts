@@ -1,10 +1,17 @@
-interface Memory {
-    uuid: number;
-    log: any;
-}
+import { ROLE_WORKER, ROLE_MINER } from './config';
 
-interface CreepMemory {
-    role: string;
-    room: string;
-    working: boolean; // Used for state machine switching (e.g., harvesting vs transferring)
+declare global {
+    interface Memory {
+        uuid: number;
+        log: any;
+        [key: string]: any;
+    }
+
+    interface CreepMemory {
+        role: string;
+        working: boolean;
+        sourceId?: Id<Source>;
+        targetId?: Id<_HasId>;
+        [key: string]: any;
+    }
 }

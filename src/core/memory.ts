@@ -1,4 +1,4 @@
-export class MemoryManager {
+export class memory {
     /**
      * Clear memory of dead creeps to prevent memory leaks
      */
