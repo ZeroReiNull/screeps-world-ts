@@ -1,0 +1,27 @@
+{
+  "name": "screeps-world-ts",
+  "version": "1.0.0",
+  "description": "My scripts for Screeps: World",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --noEmit && node esbuild.config.mjs",
+    "push": "node --env-file=.env scripts/deploy.mjs",
+    "watch": "node --env-file=.env scripts/watch.mjs"
+  },
+  "keywords": [
+    "screeps"
+  ],
+  "author": "ZeroReiNull",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/lodash": "^3.10.1",
+    "@types/screeps": "^3.4.0",
+    "chokidar": "^5.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "screeps-api": "^2.1.0"
+  }
+}
