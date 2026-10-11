@@ -7,7 +7,7 @@ await esbuild.build({
   platform: "node",
   target: "node24",
   format: "cjs",
-  sourcemap: "inline",
+  sourcemap: "external",
   sourcesContent: true,
   minify: true,
   treeShaking: true,
