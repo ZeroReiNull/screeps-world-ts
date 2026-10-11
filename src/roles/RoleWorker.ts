@@ -11,6 +11,17 @@ export class RoleWorker {
 
         // 2. Working state
         if (creep.memory.working) {
+            // Priority S: Emergency Downgrade Prevention
+            // Immediately override all other tasks if Controller is at risk (< 3000 ticks)
+            const controller = creep.room.controller;
+            if (controller && controller.my && controller.level > 1 && controller.ticksToDowngrade < 1000) {
+                creep.say('🚨 save RC');
+                if (creep.upgradeController(controller) === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(controller, { visualizePathStyle: { stroke: '#ff0000' } });
+                }
+                return;
+            }
+
             // Priority A: Fill Spawn, Extensions, and Towers (< 80% capacity)
             const urgentTarget = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
                 filter: (s) => {

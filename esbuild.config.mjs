@@ -4,12 +4,13 @@ await esbuild.build({
   entryPoints: ["src/main.ts"],
   outfile: "dist/main.js",
   bundle: true,
-  platform: "neutral",
+  platform: "node",
+  target: "node24",
   format: "cjs",
-  target: "es2019",
-  sourcemap: "external",
+  sourcemap: "inline",
   sourcesContent: true,
-  minify: false,
+  minify: true,
+  treeShaking: true,
   external: ['lodash'],
   logLevel: "info"
 });

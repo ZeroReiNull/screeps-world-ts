@@ -29,4 +29,12 @@ export function loop(): void {
                 break;
         }
     }
+
+    // 4. Generate a Pixel if possible
+    if (typeof Game.cpu.generatePixel === 'function' && Game.cpu.bucket >= 10000) {
+        const res = Game.cpu.generatePixel();
+        if (res === OK) {
+            console.log(`Successfully minted 1 Pixel at tick ${Game.time}!`);
+        }
+    }
 }
