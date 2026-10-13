@@ -161,6 +161,38 @@ export function planRoom(state: RoomState): void {
       )
         place(s.pos.x, s.pos.y, STRUCTURE_RAMPART);
     }
+  // Reserve up to two walkable firing positions around the first spawn.
+  if (level >= 3 && state.towers.length) {
+    let positions = occupied.filter(
+      (s) =>
+        s.type === STRUCTURE_RAMPART &&
+        origin.inRangeTo(s.x, s.y, 2) &&
+        !occupied.some(
+          (other) =>
+            other.x === s.x &&
+            other.y === s.y &&
+            (OBSTACLE_OBJECT_TYPES as readonly string[]).includes(other.type),
+        ),
+    ).length;
+    for (const [dx, dy] of [
+      [0, -1],
+      [1, 0],
+      [0, 1],
+      [-1, 0],
+    ]) {
+      if (positions >= 2) break;
+      const x = origin.x + dx,
+        y = origin.y + dy;
+      if (
+        occupied.some(
+          (s) =>
+            s.x === x && s.y === y && (OBSTACLE_OBJECT_TYPES as readonly string[]).includes(s.type),
+        )
+      )
+        continue;
+      if (place(x, y, STRUCTURE_RAMPART)) positions++;
+    }
+  }
   fill(STRUCTURE_EXTENSION);
   if (level >= 5) {
     // A storage receiver first, followed by source links and the controller. Containers remain as a fallback.

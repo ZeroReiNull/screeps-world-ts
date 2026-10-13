@@ -66,3 +66,80 @@ describe('defense', () => {
     expect(guard.heal).toHaveBeenCalledWith(guard);
   });
 });
+
+describe('defensive positioning and economy protection', () => {
+  function enemy(
+    f: ReturnType<typeof fixture>,
+    x: number,
+    y: number,
+    parts = [ATTACK, MOVE] as BodyPartConstant[],
+  ) {
+    const c = creep(f, 'defender', parts, { pos: pos(x, y) });
+    delete Game.creeps[c.name];
+    f.hostiles.push(c);
+    return c;
+  }
+  it('does not chase distant attackers away from base', () => {
+    const f = fixture(3);
+    spawner(f);
+    const guard = creep(f, 'defender', [RANGED_ATTACK, MOVE]);
+    enemy(f, 5, 5);
+    RoleDefender.run(guard);
+    expect(guard.moveTo).not.toHaveBeenCalled();
+  });
+  it('occupies a walkable rampart in firing range', () => {
+    const f = fixture(3);
+    spawner(f);
+    const guard = creep(f, 'defender', [RANGED_ATTACK, MOVE]);
+    const cover = structure(f, STRUCTURE_RAMPART, 26, 26);
+    enemy(f, 28, 26);
+    RoleDefender.run(guard);
+    expect(guard.moveTo).toHaveBeenCalledWith(cover, expect.objectContaining({ range: 0 }));
+  });
+  it('does not try to stand on a rampart covering a spawn', () => {
+    const f = fixture(3);
+    spawner(f);
+    structure(f, STRUCTURE_RAMPART, 25, 25);
+    const guard = creep(f, 'defender', [RANGED_ATTACK, MOVE]);
+    enemy(f, 28, 25);
+    RoleDefender.run(guard);
+    expect(guard.moveTo).not.toHaveBeenCalled();
+  });
+  it('holds its rampart against nearby melee attackers', () => {
+    const f = fixture(3);
+    spawner(f);
+    structure(f, STRUCTURE_RAMPART, 26, 26);
+    const guard = creep(f, 'defender', [RANGED_ATTACK, MOVE], { pos: pos(26, 26) });
+    const attacker = enemy(f, 27, 26);
+    RoleDefender.run(guard);
+    expect(guard.rangedAttack).toHaveBeenCalledWith(attacker);
+    expect(guard.move).not.toHaveBeenCalled();
+    expect(guard.moveTo).not.toHaveBeenCalled();
+  });
+  it('shoots an in-range attacker instead of chasing a distant healer', () => {
+    const f = fixture(3);
+    spawner(f);
+    const guard = creep(f, 'defender', [RANGED_ATTACK, MOVE]);
+    const attacker = enemy(f, 28, 25);
+    enemy(f, 5, 5, [HEAL, MOVE]);
+    RoleDefender.run(guard);
+    expect(guard.rangedAttack).toHaveBeenCalledWith(attacker);
+  });
+  it('protects multiple injured economic creeps away from the spawn with safe mode', () => {
+    const f = fixture(2);
+    spawner(f);
+    creep(f, 'miner', [WORK, MOVE], { pos: pos(10, 10), hits: 100 });
+    creep(f, 'hauler', [CARRY, MOVE], { pos: pos(11, 10), hits: 100 });
+    enemy(f, 10, 11);
+    runDefense(inspectRoom(f.room));
+    expect(f.room.controller!.activateSafeMode).toHaveBeenCalledOnce();
+  });
+  it('does not use safe mode for unharmed economic creeps near an enemy', () => {
+    const f = fixture(2);
+    spawner(f);
+    creep(f, 'miner', [WORK, MOVE], { pos: pos(10, 10) });
+    enemy(f, 10, 11);
+    runDefense(inspectRoom(f.room));
+    expect(f.room.controller!.activateSafeMode).not.toHaveBeenCalled();
+  });
+});

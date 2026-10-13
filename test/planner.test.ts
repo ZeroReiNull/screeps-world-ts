@@ -134,3 +134,24 @@ describe('room construction', () => {
     expect(f.room.createConstructionSite).not.toHaveBeenCalled();
   });
 });
+
+describe('defender firing positions', () => {
+  it('plans walkable ramparts near a spawn once a tower exists', () => {
+    const f = fixture(3, 800);
+    spawner(f);
+    structure(f, STRUCTURE_TOWER, 23, 25);
+    f.room.memory.settings = { maxNewSites: 20, maxRoomSites: 30 };
+    planRoom(inspectRoom(f.room));
+    const positions = f.sites.filter(
+      (s) =>
+        s.structureType === STRUCTURE_RAMPART &&
+        s.pos.inRangeTo(25, 25, 2) &&
+        !f.structures.some(
+          (other) =>
+            other.pos.isEqualTo(s.pos) &&
+            (OBSTACLE_OBJECT_TYPES as readonly string[]).includes(other.structureType),
+        ),
+    );
+    expect(positions).toHaveLength(2);
+  });
+});

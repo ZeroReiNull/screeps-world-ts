@@ -109,8 +109,12 @@ export function planPopulation(state: RoomState): PopulationPlan {
         )
       : 0;
     targets.miner += Math.max(desired, assigned.length + additional);
-    for (let i = 0; i < additional; i++)
-      requests.push({ role: 'miner', sourceId: source.id, body: minerBody, priority: 2 });
+    let missingWork = Math.max(0, neededWork - coveredWork);
+    for (let i = 0; i < additional; i++) {
+      const body = makeBody('miner', capacity, missingWork);
+      requests.push({ role: 'miner', sourceId: source.id, body, priority: 2 });
+      missingWork -= body.filter((part) => part === WORK).length;
+    }
     const anchor = room.storage ?? state.spawns[0];
     const cache = (room.memory.haulPaths ??= {});
     const anchorKey = anchor?.id ?? room.name;
@@ -130,6 +134,79 @@ export function planPopulation(state: RoomState): PopulationPlan {
     carryDemand += Math.ceil((rate * (distance * 2 + 4)) / CARRY_CAPACITY);
   }
   const mature = readySources === sources.length && readySources > 0;
+  const workerWork = Math.max(1, makeBody('worker', capacity).filter((p) => p === WORK).length);
+  const remaining = sites.reduce((n, s) => n + s.progressTotal - s.progress, 0);
+  const builders = Math.min(3, Math.ceil(remaining / (workerWork * BUILD_POWER * 1000)));
+  const bootstrap = Math.min(8, Math.max(3, Math.ceil((sources.length * 5) / workerWork)));
+  add(
+    'worker',
+    mature ? Math.max(1, room.storage && stored < cfg.storageReserve ? 1 : builders) : bootstrap,
+    4,
+  );
+  // Require sustained surplus and use separate entry/exit thresholds to avoid oscillation.
+  const overflow = (room.memory.energyOverflow ??= { active: false });
+  const sourceStores = [
+    ...new Set(
+      sources.map((s) => sourceContainer(state, s)).filter((c): c is StructureContainer => !!c),
+    ),
+  ];
+  const sourceEnergy = sourceStores.reduce((sum, c) => sum + c.store[RESOURCE_ENERGY], 0);
+  const droppedEnergy = room
+    .find(FIND_DROPPED_RESOURCES)
+    .filter((r) => r.resourceType === RESOURCE_ENERGY && sources.some((s) => s.pos.inRangeTo(r, 2)))
+    .reduce((sum, r) => sum + r.amount, 0);
+  const backlog = sourceEnergy + droppedEnergy;
+  const threatened = threatPower(state.hostiles) > 0;
+  const eligible = mature && !room.storage && level < 8 && !threatened;
+  if (!eligible || backlog < sources.length * 400) {
+    overflow.active = false;
+    delete overflow.since;
+  } else if (!overflow.active) {
+    if (backlog >= sources.length * 1200 && room.energyAvailable >= capacity * 0.8) {
+      overflow.since ??= Game.time;
+      if (Game.time - overflow.since >= 100) overflow.active = true;
+    } else delete overflow.since;
+  }
+  const surplus = stored > cfg.upgradeSurplus;
+  const upgradeWork = Math.max(1, makeBody('upgrader', capacity).filter((p) => p === WORK).length);
+  const income = sources.reduce((sum, s) => sum + s.energyCapacity / ENERGY_REGEN_TIME, 0);
+  const overflowUpgraders = Math.max(1, Math.min(5, Math.floor((income * 0.6) / upgradeWork)));
+  const upgradeTarget = overflow.active
+    ? overflowUpgraders
+    : level === 8 || !surplus
+      ? 1
+      : Math.min(3, 1 + Math.floor(stored / 150000));
+  // Budget the controller delivery leg as well as source collection.
+  const controllerSupply = state.containers.find((c) => room.controller?.pos.inRangeTo(c, 3));
+  const controllerLink = state.structures.some(
+    (s) =>
+      s.structureType === STRUCTURE_LINK &&
+      room.controller?.pos.inRangeTo(s, 3) &&
+      'isActive' in s &&
+      s.isActive(),
+  );
+  const haulAnchor = room.storage ?? state.spawns[0];
+  if (mature && controllerSupply && haulAnchor && !controllerLink) {
+    const cache = (room.memory.haulPaths ??= {});
+    const key = `controller:${controllerSupply.id}`;
+    let route = cache[key];
+    if (!route || route.anchor !== haulAnchor.id || Game.time - route.tick > 1000) {
+      const path = haulAnchor.pos.findPathTo(controllerSupply.pos, {
+        ignoreCreeps: true,
+        range: 1,
+      });
+      route = cache[key] = {
+        distance: path.length || haulAnchor.pos.getRangeTo(controllerSupply),
+        tick: Game.time,
+        anchor: haulAnchor.id,
+      };
+    }
+    const existingWork = healthy
+      .filter((c) => c.memory.role === 'upgrader')
+      .reduce((sum, c) => sum + c.getActiveBodyparts(WORK), 0);
+    const upgradeRate = Math.min(income, Math.max(existingWork, upgradeTarget * upgradeWork));
+    carryDemand += Math.ceil((upgradeRate * (route.distance * 2 + 2)) / CARRY_CAPACITY);
+  }
   const haulerBody = makeBody('hauler', capacity);
   const carryParts = Math.max(1, haulerBody.filter((p) => p === CARRY).length);
   const haulers = readySources ? Math.min(8, Math.max(1, Math.ceil(carryDemand / carryParts))) : 0;
@@ -149,27 +226,24 @@ export function planPopulation(state: RoomState): PopulationPlan {
     Math.max(haulers, existingHaulers.length + additionalHaulers),
     hasMiner && count('hauler') === 0 ? 1 : 3,
   );
-  const workerWork = Math.max(1, makeBody('worker', capacity).filter((p) => p === WORK).length);
-  const remaining = sites.reduce((n, s) => n + s.progressTotal - s.progress, 0);
-  const builders = Math.min(3, Math.ceil(remaining / (workerWork * BUILD_POWER * 1000)));
-  const bootstrap = Math.min(8, Math.max(3, Math.ceil((sources.length * 5) / workerWork)));
-  add(
-    'worker',
-    mature ? Math.max(1, room.storage && stored < cfg.storageReserve ? 1 : builders) : bootstrap,
-    4,
-  );
-  const surplus = stored > cfg.upgradeSurplus;
   add(
     'upgrader',
-    mature ? (level === 8 || !surplus ? 1 : Math.min(3, 1 + Math.floor(stored / 150000))) : 0,
+    mature ? upgradeTarget : 0,
     room.controller && room.controller.ticksToDowngrade < 5000 ? 1 : 5,
     level === 8 ? 15 : 10,
   );
   const threat = threatPower(state.hostiles);
   // Scouts do not trigger combat spawning. Armed invaders always get at least one guard.
-  const defenders =
-    threat > 0 ? Math.min(cfg.maxDefenders, Math.max(1, Math.ceil(threat / 120))) : 0;
-  add('defender', defenders, 1);
+  // Keep one guard briefly after an attack once towers and a viable body are available.
+  const recentThreat =
+    room.memory.lastThreat !== undefined && Game.time - room.memory.lastThreat < 1500;
+  const standby = level >= 3 && capacity >= 800 && state.towers.length > 0 && recentThreat ? 1 : 0;
+  const defenders = room.controller?.safeMode
+    ? 0
+    : threat > 0
+      ? Math.min(cfg.maxDefenders, level < 3 ? 1 : Math.max(1, Math.ceil(threat / 120)))
+      : Math.min(cfg.maxDefenders, standby);
+  add('defender', defenders, threat > 0 ? 1 : 6);
   const mineral = room.find(FIND_MINERALS)[0];
   const extractor = state.structures.some(
     (s) => s.structureType === STRUCTURE_EXTRACTOR && s.isActive(),

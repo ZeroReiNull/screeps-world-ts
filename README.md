@@ -51,43 +51,43 @@ npm run deploy
 
 ### 常用命令
 
-| 命令 | 用途 |
-| --- | --- |
-| `npm ci` | 按 lock 文件重新安装依赖 |
-| `npm run check` | 依次进行类型检查、测试和构建，不上传 |
-| `npm test` | 运行 Vitest 测试 |
-| `npm run test:watch` | 监听并重新运行测试 |
-| `npm run typecheck` | 检查源码及测试的 TypeScript 类型 |
-| `npm run build` | 构建 `dist/main.js` |
-| `npm run deploy` | 构建并上传游戏代码 |
-| `npm run watch` | 监听源码变化，自动构建并上传 |
+| 命令                 | 用途                                 |
+| -------------------- | ------------------------------------ |
+| `npm ci`             | 按 lock 文件重新安装依赖             |
+| `npm run check`      | 依次进行类型检查、测试和构建，不上传 |
+| `npm test`           | 运行 Vitest 测试                     |
+| `npm run test:watch` | 监听并重新运行测试                   |
+| `npm run typecheck`  | 检查源码及测试的 TypeScript 类型     |
+| `npm run build`      | 构建 `dist/main.js`                  |
+| `npm run deploy`     | 构建并上传游戏代码                   |
+| `npm run watch`      | 监听源码变化，自动构建并上传         |
 
 ### 自动化能力
 
-| 模块 | 行为 |
-| --- | --- |
-| 人口管理 | 根据矿点产量、运输距离、实际 WORK/CARRY、工程量与敌情调整需求 |
-| 身体生成 | 按能源预算生成身体，最多 50 parts；寿命不足时提前补位 |
-| 生产恢复 | 经济链断档时优先生产小 worker，最低 200 energy 起步 |
-| 多 spawn | 同房间共享生产队列与能源预算 |
-| 自动建设 | 随 RCL 解锁放置工地，由 worker 施工，保留已有建筑 |
-| 基础防御 | towers 攻击、治疗与维修；远程守卫；关键建筑附近触发 safe mode |
-| 设施调度 | links 传输、terminal 补给；可配置 labs、factory 和 power 处理 |
+| 模块     | 行为                                                           |
+| -------- | -------------------------------------------------------------- |
+| 人口管理 | 根据矿点产量、运输距离、实际 WORK/CARRY、工程量与敌情调整需求  |
+| 身体生成 | 按能源预算生成身体，最多 50 parts；寿命不足时提前补位          |
+| 生产恢复 | 经济链断档时优先生产小 worker，最低 200 energy 起步            |
+| 多 spawn | 同房间共享生产队列与能源预算                                   |
+| 自动建设 | 随 RCL 解锁放置工地，由 worker 施工，保留已有建筑              |
+| 基础防御 | towers 攻击、治疗与维修；远程守卫；关键建筑附近触发 safe mode  |
+| 设施调度 | links 传输、terminal 补给；可配置 labs、factory 和 power 处理  |
 | 多房运行 | 管理已有己方房间；清理死亡 creep Memory，隔离房间与 creep 错误 |
 
 ### RCL 1–8 发展路线
 
 下表是各阶段的主要变化，实际施工受能源、地形和工地数量限制。
 
-| 等级 | 主要发展 |
-| --- | --- |
-| RCL 1 | worker 挖矿、建设与升级，规划能源容器 |
-| RCL 2 | extensions、控制器容器、道路及关键建筑 rampart |
-| RCL 3 | towers；容器建成后逐步转向专职采矿与运输 |
-| RCL 4 | storage；按储备和盈余调整建设与升级投入 |
-| RCL 5 | storage、能源矿与控制器附近的 links |
-| RCL 6 | terminal、extractor、矿物容器、矿物采集与 labs |
-| RCL 7 | 第二个 spawn、factory |
+| 等级  | 主要发展                                                                                                |
+| ----- | ------------------------------------------------------------------------------------------------------- |
+| RCL 1 | worker 挖矿、建设与升级，规划能源容器                                                                   |
+| RCL 2 | extensions、控制器容器、道路及关键建筑 rampart                                                          |
+| RCL 3 | towers；容器建成后逐步转向专职采矿与运输                                                                |
+| RCL 4 | storage；按储备和盈余调整建设与升级投入                                                                 |
+| RCL 5 | storage、能源矿与控制器附近的 links                                                                     |
+| RCL 6 | terminal、extractor、矿物容器、矿物采集与 labs                                                          |
+| RCL 7 | 第二个 spawn、factory                                                                                   |
 | RCL 8 | 第三个 spawn、6 towers、60 extensions、10 labs、observer、power spawn、nuker；upgrader 身体最多 15 WORK |
 
 规划器默认每 **100 ticks** 检查一次，每次最多新增 **4 个工地**，单房最多保留 **12 个待建工地**。CPU bucket ≤ 1000 时暂停新增规划。
@@ -98,14 +98,14 @@ npm run deploy
 
 ### Creep 分工
 
-| 角色 | 任务 |
-| --- | --- |
-| `worker` | 早期采矿、填能、建设、维修、升级；后期保留恢复能力 |
-| `miner` | 固定矿点采矿，向附近容器或 link 交付能源 |
-| `hauler` | 搬运能源与矿物，补充 spawn、extensions、towers 和控制器供能设施 |
-| `upgrader` | 专职升级；能源盈余时增加投入，RCL 8 保留一个 |
-| `defender` | 远程守家，优先攻击 healer，尝试与近战保持距离 |
-| `mineralMiner` | 设施、矿量、能源和空间条件满足时采集矿物 |
+| 角色           | 任务                                                            |
+| -------------- | --------------------------------------------------------------- |
+| `worker`       | 早期采矿、填能、建设、维修、升级；后期保留恢复能力              |
+| `miner`        | 固定矿点采矿，向附近容器或 link 交付能源                        |
+| `hauler`       | 搬运能源与矿物，补充 spawn、extensions、towers 和控制器供能设施 |
+| `upgrader`     | 专职升级；能源盈余时增加投入，RCL 8 保留一个                    |
+| `defender`     | 远程守家，优先攻击 healer，尝试与近战保持距离                   |
+| `mineralMiner` | 设施、矿量、能源和空间条件满足时采集矿物                        |
 
 已有 creep 的身体不会改变。人口调整通过后续生产与自然替换完成；旧小 creep 的实际 WORK/CARRY 不足时会补充产能。
 
@@ -122,15 +122,15 @@ Memory.rooms['W1N1'].settings = {
 };
 ```
 
-| 设置 | 默认值 | 含义 |
-| --- | --- | --- |
-| `autoBuild` | `true` | 自动放置工地 |
-| `planInterval` | `100` | 规划间隔，单位 tick |
-| `maxNewSites` | `4` | 每轮最多新增工地 |
-| `maxRoomSites` | `12` | 单房规划工地上限 |
-| `storageReserve` | `20000` | 能源储备参考值 |
+| 设置             | 默认值  | 含义                   |
+| ---------------- | ------- | ---------------------- |
+| `autoBuild`      | `true`  | 自动放置工地           |
+| `planInterval`   | `100`   | 规划间隔，单位 tick    |
+| `maxNewSites`    | `4`     | 每轮最多新增工地       |
+| `maxRoomSites`   | `12`    | 单房规划工地上限       |
+| `storageReserve` | `20000` | 能源储备参考值         |
 | `upgradeSurplus` | `60000` | 增加升级投入的储备阈值 |
-| `maxDefenders` | `4` | 守卫数量上限 |
+| `maxDefenders`   | `4`     | 守卫数量上限           |
 
 已有手动布局时，可以关闭规划；其他自动化继续运行：
 
@@ -221,43 +221,43 @@ Deployment rebuilds the code and uploads it to the configured branch. Alternativ
 
 ### Commands
 
-| Command | Purpose |
-| --- | --- |
-| `npm ci` | Reinstall dependencies from the lock file |
-| `npm run check` | Type-check, test, and build; no upload |
-| `npm test` | Run Vitest tests |
-| `npm run test:watch` | Watch and rerun tests |
-| `npm run typecheck` | Check source and test types |
-| `npm run build` | Build `dist/main.js` |
-| `npm run deploy` | Build and upload game code |
-| `npm run watch` | Watch source changes, build, and upload |
+| Command              | Purpose                                   |
+| -------------------- | ----------------------------------------- |
+| `npm ci`             | Reinstall dependencies from the lock file |
+| `npm run check`      | Type-check, test, and build; no upload    |
+| `npm test`           | Run Vitest tests                          |
+| `npm run test:watch` | Watch and rerun tests                     |
+| `npm run typecheck`  | Check source and test types               |
+| `npm run build`      | Build `dist/main.js`                      |
+| `npm run deploy`     | Build and upload game code                |
+| `npm run watch`      | Watch source changes, build, and upload   |
 
 ### Features
 
-| System | Behavior |
-| --- | --- |
+| System              | Behavior                                                                                            |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
 | Adaptive population | Accounts for source output, hauling distance, actual WORK/CARRY, construction workload, and threats |
-| Body generation | Respects energy budgets and the 50-part limit; schedules replacements before expiration |
-| Economic recovery | Prioritizes a small recovery worker when the economy breaks, starting at 200 energy |
-| Multiple spawns | Shares a room's queue and energy budget |
-| Construction | Places sites as RCL unlocks structures and preserves existing buildings |
-| Basic defense | Tower combat, healing and repairs; ranged defenders; safe mode near critical structures |
-| Structure control | Link transfers, terminal supply, and configurable labs, factory, and power processing |
-| Multiple rooms | Manages existing owned rooms, cleans dead creep Memory, and isolates execution errors |
+| Body generation     | Respects energy budgets and the 50-part limit; schedules replacements before expiration             |
+| Economic recovery   | Prioritizes a small recovery worker when the economy breaks, starting at 200 energy                 |
+| Multiple spawns     | Shares a room's queue and energy budget                                                             |
+| Construction        | Places sites as RCL unlocks structures and preserves existing buildings                             |
+| Basic defense       | Tower combat, healing and repairs; ranged defenders; safe mode near critical structures             |
+| Structure control   | Link transfers, terminal supply, and configurable labs, factory, and power processing               |
+| Multiple rooms      | Manages existing owned rooms, cleans dead creep Memory, and isolates execution errors               |
 
 ### RCL progression
 
 Construction depends on available energy, terrain, and site limits.
 
-| Level | Main additions |
-| --- | --- |
-| RCL 1 | Workers harvest, build, and upgrade; source containers are planned |
-| RCL 2 | Extensions, controller container, roads, and ramparts on critical structures |
-| RCL 3 | Towers; dedicated miners and haulers as containers become available |
-| RCL 4 | Storage; construction and upgrading budgets based on reserves |
-| RCL 5 | Links near storage, sources, and the controller |
-| RCL 6 | Terminal, extractor, mineral container, mineral mining, and labs |
-| RCL 7 | Second spawn and factory |
+| Level | Main additions                                                                                                     |
+| ----- | ------------------------------------------------------------------------------------------------------------------ |
+| RCL 1 | Workers harvest, build, and upgrade; source containers are planned                                                 |
+| RCL 2 | Extensions, controller container, roads, and ramparts on critical structures                                       |
+| RCL 3 | Towers; dedicated miners and haulers as containers become available                                                |
+| RCL 4 | Storage; construction and upgrading budgets based on reserves                                                      |
+| RCL 5 | Links near storage, sources, and the controller                                                                    |
+| RCL 6 | Terminal, extractor, mineral container, mineral mining, and labs                                                   |
+| RCL 7 | Second spawn and factory                                                                                           |
 | RCL 8 | Third spawn, 6 towers, 60 extensions, 10 labs, observer, power spawn, and nuker; upgrader bodies capped at 15 WORK |
 
 By default, planning runs every **100 ticks**, adds up to **4 sites** per pass, and keeps at most **12 pending sites** per room. New planning pauses at CPU bucket ≤ 1000.
@@ -268,14 +268,14 @@ The planner uses basic placement rules. Narrow terrain, exits, and dense existin
 
 ### Creep roles
 
-| Role | Responsibility |
-| --- | --- |
-| `worker` | Early harvesting, filling, construction, repair, and upgrading; later economic recovery |
-| `miner` | Harvests an assigned source and delivers to a nearby container or link |
-| `hauler` | Moves energy and minerals; supplies spawns, extensions, towers, and controller supply structures |
-| `upgrader` | Dedicated upgrading; more investment with surplus energy, one at RCL 8 |
-| `defender` | Ranged defense, healer targeting, and attempts to keep distance from melee enemies |
-| `mineralMiner` | Mines minerals when infrastructure, energy, mineral availability, and capacity allow |
+| Role           | Responsibility                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| `worker`       | Early harvesting, filling, construction, repair, and upgrading; later economic recovery          |
+| `miner`        | Harvests an assigned source and delivers to a nearby container or link                           |
+| `hauler`       | Moves energy and minerals; supplies spawns, extensions, towers, and controller supply structures |
+| `upgrader`     | Dedicated upgrading; more investment with surplus energy, one at RCL 8                           |
+| `defender`     | Ranged defense, healer targeting, and attempts to keep distance from melee enemies               |
+| `mineralMiner` | Mines minerals when infrastructure, energy, mineral availability, and capacity allow             |
 
 Existing bodies do not change. Adaptation happens through new spawning and natural replacement. Additional capacity is spawned when older, smaller creeps provide insufficient WORK or CARRY.
 
@@ -292,15 +292,15 @@ Memory.rooms['W1N1'].settings = {
 };
 ```
 
-| Setting | Default | Meaning |
-| --- | --- | --- |
-| `autoBuild` | `true` | Automatic construction-site placement |
-| `planInterval` | `100` | Planning interval in ticks |
-| `maxNewSites` | `4` | Maximum new sites per pass |
-| `maxRoomSites` | `12` | Pending-site limit for room planning |
-| `storageReserve` | `20000` | Energy reserve reference |
+| Setting          | Default | Meaning                                   |
+| ---------------- | ------- | ----------------------------------------- |
+| `autoBuild`      | `true`  | Automatic construction-site placement     |
+| `planInterval`   | `100`   | Planning interval in ticks                |
+| `maxNewSites`    | `4`     | Maximum new sites per pass                |
+| `maxRoomSites`   | `12`    | Pending-site limit for room planning      |
+| `storageReserve` | `20000` | Energy reserve reference                  |
 | `upgradeSurplus` | `60000` | Reserve threshold for increased upgrading |
-| `maxDefenders` | `4` | Defender count limit |
+| `maxDefenders`   | `4`     | Defender count limit                      |
 
 Disable construction planning for a custom layout, or inspect room statistics:
 

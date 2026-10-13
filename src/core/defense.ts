@@ -1,9 +1,11 @@
+import { canAttackCreeps, protectedAt } from './safety';
 import { settings } from '../config';
 import { repairLimit } from './actions';
 import { threatPower, type RoomState } from './room';
 export function runDefense(state: RoomState): void {
   const { room, towers, hostiles } = state;
   const cfg = settings(room);
+  if (threatPower(hostiles) > 0) room.memory.lastThreat = Game.time;
   const healers = hostiles.filter((c) => c.getActiveBodyparts(HEAL) > 0);
   for (const tower of towers) {
     if (tower.store[RESOURCE_ENERGY] < TOWER_ENERGY_COST) continue;
@@ -45,7 +47,23 @@ export function runDefense(state: RoomState): void {
   const danger = hostiles.some(
     (c) => threatPower([c]) > 0 && critical.some((s) => c.pos.inRangeTo(s, 3)),
   );
-  if (danger) {
+  const economy = state.creeps.filter((c) => c.memory.role !== 'defender' && !c.spawning);
+  const attackedEconomy = economy.filter(
+    (c) =>
+      c.hits < c.hitsMax &&
+      !protectedAt(c) &&
+      hostiles.some(
+        (enemy) =>
+          canAttackCreeps(enemy) &&
+          enemy.pos.inRangeTo(c, enemy.getActiveBodyparts(RANGED_ATTACK) > 0 ? 3 : 1),
+      ),
+  );
+  const feeders = economy.filter(
+    (c) => c.memory.role === 'worker' || c.memory.role === 'miner' || c.memory.role === 'hauler',
+  );
+  const economyDanger =
+    attackedEconomy.length >= 2 || (feeders.length === 1 && attackedEconomy.includes(feeders[0]));
+  if (danger || economyDanger) {
     const result = controller.activateSafeMode();
     if (result === OK) console.log(`[defense ${room.name}] Safe mode activated`);
   }

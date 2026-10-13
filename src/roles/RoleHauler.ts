@@ -4,6 +4,7 @@ export class RoleHauler {
   static run(creep: Creep): void {
     if (goHome(creep)) return;
     const room = creep.room;
+    const controllerBuffer = room.memory.energyOverflow?.active ? 1500 : 500;
     if (!working(creep, true)) {
       if (
         Object.keys(creep.store).some(
@@ -25,7 +26,7 @@ export class RoleHauler {
         const controllerDemand = room.controller?.pos.findInRange(FIND_STRUCTURES, 3, {
           filter: (s) =>
             (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_LINK) &&
-            s.store[RESOURCE_ENERGY] < 500,
+            s.store[RESOURCE_ENERGY] < controllerBuffer,
         }).length;
         const stored = room.storage?.store[RESOURCE_ENERGY] ?? 0;
         const canUseStorage =
@@ -140,7 +141,7 @@ export class RoleHauler {
     const controllerSupply = controller?.pos.findInRange(FIND_STRUCTURES, 3, {
       filter: (s) =>
         (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_LINK) &&
-        s.store[RESOURCE_ENERGY] < 500 &&
+        s.store[RESOURCE_ENERGY] < controllerBuffer &&
         s.store.getFreeCapacity(RESOURCE_ENERGY) > 0,
     })[0] as StructureContainer | StructureLink | undefined;
     if (

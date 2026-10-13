@@ -59,7 +59,7 @@ describe('population and spawning', () => {
     old.memory.sourceId = src.id;
     const miners = planPopulation(inspectRoom(f.room)).requests.filter((r) => r.role === 'miner');
     expect(miners).toHaveLength(1);
-    expect(miners[0].body.filter((p) => p === WORK)).toHaveLength(5);
+    expect(miners[0].body.filter((p) => p === WORK)).toHaveLength(4);
   });
   it('counts actual CARRY on old haulers when calculating transport coverage', () => {
     const f = fixture(8, 12900);
@@ -188,5 +188,51 @@ describe('population and spawning', () => {
     m.memory.sourceId = src.id;
     creep(f, 'hauler', [CARRY, MOVE], { ticksToLive: 1 });
     expect(planPopulation(inspectRoom(f.room)).requests[0].role).toBe('hauler');
+  });
+});
+
+describe('guard reserves', () => {
+  it('keeps a low-priority guard after an attack and expires the reserve', () => {
+    const f = fixture(3, 800);
+    spawner(f);
+    structure(f, STRUCTURE_TOWER, 24, 25, 1000);
+    f.room.memory.lastThreat = Game.time;
+    let plan = planPopulation(inspectRoom(f.room));
+    expect(plan.targets.defender).toBe(1);
+    expect(plan.requests.find((r) => r.role === 'defender')?.priority).toBe(6);
+    Game.time += 1500;
+    expect(planPopulation(inspectRoom(f.room)).targets.defender).toBe(0);
+  });
+  it('does not maintain a standby guard at RCL2 or during safe mode', () => {
+    const f = fixture(2, 550);
+    spawner(f);
+    f.room.memory.lastThreat = Game.time;
+    expect(planPopulation(inspectRoom(f.room)).targets.defender).toBe(0);
+    f.room.controller!.safeMode = 100;
+    const enemy = creep(f, 'defender', [ATTACK, MOVE]);
+    delete Game.creeps[enemy.name];
+    f.hostiles.push(enemy);
+    expect(planPopulation(inspectRoom(f.room)).targets.defender).toBe(0);
+  });
+});
+
+describe('mining and controller hauling budgets', () => {
+  it('allocates only five WORK across new RCL2 miners', () => {
+    const f = fixture(2, 550);
+    spawner(f);
+    source(f);
+    structure(f, STRUCTURE_CONTAINER, 11, 10);
+    const miners = planPopulation(inspectRoom(f.room)).requests.filter((r) => r.role === 'miner');
+    expect(miners.map((r) => r.body.filter((p) => p === WORK).length)).toEqual([4, 1]);
+  });
+  it('adds transport capacity for distant controller supply', () => {
+    const f = fixture(2, 550);
+    spawner(f, 'Spawn1', 5, 5);
+    source(f, 3, 3);
+    structure(f, STRUCTURE_CONTAINER, 4, 3);
+    const baseline = planPopulation(inspectRoom(f.room)).targets.hauler;
+    f.room.controller!.pos = pos(48, 48);
+    structure(f, STRUCTURE_CONTAINER, 47, 48);
+    expect(planPopulation(inspectRoom(f.room)).targets.hauler).toBeGreaterThan(baseline);
   });
 });

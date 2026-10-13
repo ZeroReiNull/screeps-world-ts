@@ -1,3 +1,4 @@
+import { optionalCpu } from './cpu';
 import type { RoomState } from './room';
 /** Non-market structure operations. Expensive industry is opt-in per room. */
 export function runStructures(state: RoomState): void {
@@ -22,6 +23,7 @@ export function runStructures(state: RoomState): void {
         free.set(target.id, free.get(target.id)! - amount);
     }
   }
+  if (!optionalCpu()) return;
   if (room.memory.labReaction) {
     const [a, b] = room.memory.labReaction.inputs.map((id) => Game.getObjectById(id));
     if (a?.my && b?.my && a.mineralType && b.mineralType) {
