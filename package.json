@@ -10,7 +10,9 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm test && npm run build"
+    "check": "npm run typecheck && npm test && npm run build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "screeps"
@@ -23,6 +25,7 @@
     "@types/screeps": "^3.4.0",
     "chokidar": "^5.0.0",
     "esbuild": "^0.28.2",
+    "prettier": "3.9.10",
     "typescript": "^7.0.2",
     "vitest": "^5.0.4"
   },

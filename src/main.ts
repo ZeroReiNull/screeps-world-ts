@@ -12,12 +12,19 @@ import { RoleDefender } from './roles/RoleDefender';
 import { RoleMineralMiner } from './roles/RoleMineralMiner';
 import { CONFIG, type Role } from './config';
 const roles: Record<Role, { run(creep: Creep): void }> = {
-  worker: RoleWorker, miner: RoleMiner, hauler: RoleHauler, upgrader: RoleUpgrader,
-  defender: RoleDefender, mineralMiner: RoleMineralMiner,
+  worker: RoleWorker,
+  miner: RoleMiner,
+  hauler: RoleHauler,
+  upgrader: RoleUpgrader,
+  defender: RoleDefender,
+  mineralMiner: RoleMineralMiner,
 };
 function guard(label: string, task: () => void): void {
-  try { task(); } catch (error) {
-    if (Game.time % 25 === 0) console.log(`[${label}] ${error instanceof Error ? error.stack : String(error)}`);
+  try {
+    task();
+  } catch (error) {
+    if (Game.time % 25 === 0)
+      console.log(`[${label}] ${error instanceof Error ? error.stack : String(error)}`);
   }
 }
 export function loop(): void {
@@ -37,5 +44,10 @@ export function loop(): void {
     if (!roles[creep.memory.role]) creep.memory.role = 'worker';
     guard(creep.name, () => roles[creep.memory.role].run(creep));
   }
-  if (CONFIG.generatePixel && typeof Game.cpu.generatePixel === 'function' && Game.cpu.bucket >= 10000) Game.cpu.generatePixel();
+  if (
+    CONFIG.generatePixel &&
+    typeof Game.cpu.generatePixel === 'function' &&
+    Game.cpu.bucket >= 10000
+  )
+    Game.cpu.generatePixel();
 }

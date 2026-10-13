@@ -34,15 +34,15 @@ npm run watch       # 监听 src，发生修改时构建并上传
 
 ## 默认自动化
 
-| 阶段 | 自动执行 |
-| --- | --- |
-| RCL 1 | 小 worker 恢复生产、按矿点生产容器、挖矿与升级 |
-| RCL 2 | extensions、控制器容器、道路、关键结构 rampart；低容量矿点可配置多个矿工 |
-| RCL 3 | tower 攻击、治疗与保留能源的维修；逐步转向专职采矿和运输 |
-| RCL 4 | storage、按能源盈余分配建设与升级人数 |
-| RCL 5 | storage/source/controller links，自动传输并防止同 tick 超额填充 |
-| RCL 6 | terminal、extractor、矿物容器和采矿、labs |
-| RCL 7 | 第二个 spawn、factory |
+| 阶段  | 自动执行                                                                                             |
+| ----- | ---------------------------------------------------------------------------------------------------- |
+| RCL 1 | 小 worker 恢复生产、按矿点生产容器、挖矿与升级                                                       |
+| RCL 2 | extensions、控制器容器、道路、关键结构 rampart；低容量矿点可配置多个矿工                             |
+| RCL 3 | tower 攻击、治疗与保留能源的维修；逐步转向专职采矿和运输                                             |
+| RCL 4 | storage、按能源盈余分配建设与升级人数                                                                |
+| RCL 5 | storage/source/controller links，自动传输并防止同 tick 超额填充                                      |
+| RCL 6 | terminal、extractor、矿物容器和采矿、labs                                                            |
+| RCL 7 | 第二个 spawn、factory                                                                                |
 | RCL 8 | 第三个 spawn、6 towers、60 extensions、10 labs、observer、power spawn、nuker；升级身体限制在 15 WORK |
 
 规划每 100 ticks 执行一次，每次最多新增 4 个工地，单房最多保留 12 个待建工地。按照当前 RCL 的上限统计已有结构和工地；优先能源、防御和基础设施。围绕第一个 spawn 的锚点预留间隔建设，避开墙体、矿点和控制器。不拆已有结构。CPU bucket 低于或等于 1000 时暂停新增规划。
@@ -76,7 +76,7 @@ Memory.rooms['W1N1'].settings = {
   autoBuild: false,
   storageReserve: 20000,
   upgradeSurplus: 60000,
-  maxDefenders: 4
+  maxDefenders: 4,
 };
 
 // 再次启用规划。
@@ -99,7 +99,7 @@ Memory.rooms['W1N1'].factoryProduct = 'battery';
 // 实验室：先装好两种有效原料；output 必须在两个 input 的 2 格内。
 Memory.rooms['W1N1'].labReaction = {
   inputs: ['inputLabId1', 'inputLabId2'],
-  outputs: ['outputLabId1']
+  outputs: ['outputLabId1'],
 };
 
 // 装填 power + energy 后启用处理。
