@@ -66,12 +66,12 @@ npm run deploy
 
 ### 常用 Console 指令
 
-下面的 JavaScript 在 **游戏 Console** 中运行；`npm` 命令在本地项目目录终端运行。示例使用 `W21S18`，其他房间请替换名称。先部署并运行一个 tick，让房间 Memory 初始化。
+下面的 JavaScript 在 **游戏 Console** 中运行；`npm` 命令在本地项目目录终端运行。示例使用 `W11S18`，其他房间请替换名称。先部署并运行一个 tick，让房间 Memory 初始化。
 
 **查看房间目标人数、能源与敌情：**
 
 ```js
-JSON.stringify(Memory.rooms['W21S18'].stats);
+JSON.stringify(Memory.rooms['W11S18'].stats);
 ```
 
 **统计实际 creep 人数（包含正在生成的单位）：**
@@ -79,7 +79,7 @@ JSON.stringify(Memory.rooms['W21S18'].stats);
 ```js
 JSON.stringify(
   Object.values(Game.creeps)
-    .filter((c) => (c.memory.home ?? c.room.name) === 'W21S18')
+    .filter((c) => (c.memory.home ?? c.room.name) === 'W11S18')
     .reduce((counts, c) => {
       counts[c.memory.role] = (counts[c.memory.role] || 0) + 1;
       return counts;
@@ -91,7 +91,7 @@ JSON.stringify(
 
 ```js
 JSON.stringify(
-  Game.rooms['W21S18']
+  Game.rooms['W11S18']
     .find(FIND_STRUCTURES)
     .filter((s) => s.structureType === STRUCTURE_CONTAINER)
     .map((s) => ({
@@ -106,24 +106,24 @@ JSON.stringify(
 **查看能源积压模式、生产状态与 safe mode：**
 
 ```js
-JSON.stringify(Memory.rooms['W21S18'].energyOverflow);
+JSON.stringify(Memory.rooms['W11S18'].energyOverflow);
 JSON.stringify(
-  Game.rooms['W21S18'].find(FIND_MY_SPAWNS).map((s) => ({ name: s.name, spawning: s.spawning })),
+  Game.rooms['W11S18'].find(FIND_MY_SPAWNS).map((s) => ({ name: s.name, spawning: s.spawning })),
 );
 JSON.stringify({
-  active: Game.rooms['W21S18'].controller.safeMode,
-  available: Game.rooms['W21S18'].controller.safeModeAvailable,
-  cooldown: Game.rooms['W21S18'].controller.safeModeCooldown,
+  active: Game.rooms['W11S18'].controller.safeMode,
+  available: Game.rooms['W11S18'].controller.safeModeAvailable,
+  cooldown: Game.rooms['W11S18'].controller.safeModeCooldown,
 });
 ```
 
 **开启或关闭自动建设，保留其他房间设置：**
 
 ```js
-Memory.rooms['W21S18'].settings ??= {};
-Memory.rooms['W21S18'].settings.autoBuild = false;
+Memory.rooms['W11S18'].settings ??= {};
+Memory.rooms['W11S18'].settings.autoBuild = false;
 // 恢复时执行：
-Memory.rooms['W21S18'].settings.autoBuild = true;
+Memory.rooms['W11S18'].settings.autoBuild = true;
 ```
 
 **开启或关闭 pixel，查看 CPU 与任务估计：**
@@ -242,7 +242,7 @@ JSON.stringify(Memory.rooms['W1N1'].stats);
 查看模式：
 
 ```js
-JSON.stringify(Memory.rooms['W21S18'].energyOverflow);
+JSON.stringify(Memory.rooms['W11S18'].energyOverflow);
 ```
 
 ### 防御与边界
@@ -368,12 +368,12 @@ Deployment rebuilds the code and uploads it to the configured branch. Alternativ
 
 ### Console quick reference
 
-Run this JavaScript in the **game Console**, and run `npm` commands in your local project terminal. Examples use `W21S18`; replace it for another room. Deploy and allow one tick to initialize room Memory first.
+Run this JavaScript in the **game Console**, and run `npm` commands in your local project terminal. Examples use `W11S18`; replace it for another room. Deploy and allow one tick to initialize room Memory first.
 
 **Room targets, energy, and threats:**
 
 ```js
-JSON.stringify(Memory.rooms['W21S18'].stats);
+JSON.stringify(Memory.rooms['W11S18'].stats);
 ```
 
 **Actual role counts, including spawning creeps:**
@@ -381,7 +381,7 @@ JSON.stringify(Memory.rooms['W21S18'].stats);
 ```js
 JSON.stringify(
   Object.values(Game.creeps)
-    .filter((c) => (c.memory.home ?? c.room.name) === 'W21S18')
+    .filter((c) => (c.memory.home ?? c.room.name) === 'W11S18')
     .reduce((counts, c) => {
       counts[c.memory.role] = (counts[c.memory.role] || 0) + 1;
       return counts;
@@ -393,14 +393,14 @@ JSON.stringify(
 
 ```js
 JSON.stringify(
-  Game.rooms['W21S18']
+  Game.rooms['W11S18']
     .find(FIND_STRUCTURES)
     .filter((s) => s.structureType === STRUCTURE_CONTAINER)
     .map((s) => ({
       x: s.pos.x,
       y: s.pos.y,
       energy: s.store[RESOURCE_ENERGY],
-      nearController: s.pos.inRangeTo(Game.rooms['W21S18'].controller, 3),
+      nearController: s.pos.inRangeTo(Game.rooms['W11S18'].controller, 3),
     })),
 );
 ```
@@ -408,24 +408,24 @@ JSON.stringify(
 **Overflow mode, spawn activity, and safe mode:**
 
 ```js
-JSON.stringify(Memory.rooms['W21S18'].energyOverflow);
+JSON.stringify(Memory.rooms['W11S18'].energyOverflow);
 JSON.stringify(
-  Game.rooms['W21S18'].find(FIND_MY_SPAWNS).map((s) => ({ name: s.name, spawning: s.spawning })),
+  Game.rooms['W11S18'].find(FIND_MY_SPAWNS).map((s) => ({ name: s.name, spawning: s.spawning })),
 );
 JSON.stringify({
-  active: Game.rooms['W21S18'].controller.safeMode,
-  available: Game.rooms['W21S18'].controller.safeModeAvailable,
-  cooldown: Game.rooms['W21S18'].controller.safeModeCooldown,
+  active: Game.rooms['W11S18'].controller.safeMode,
+  available: Game.rooms['W11S18'].controller.safeModeAvailable,
+  cooldown: Game.rooms['W11S18'].controller.safeModeCooldown,
 });
 ```
 
 **Toggle construction without replacing other room settings:**
 
 ```js
-Memory.rooms['W21S18'].settings ??= {};
-Memory.rooms['W21S18'].settings.autoBuild = false;
+Memory.rooms['W11S18'].settings ??= {};
+Memory.rooms['W11S18'].settings.autoBuild = false;
 // To resume:
-Memory.rooms['W21S18'].settings.autoBuild = true;
+Memory.rooms['W11S18'].settings.autoBuild = true;
 ```
 
 **Toggle pixels and inspect CPU and task estimates:**
@@ -542,7 +542,7 @@ While active, the controller supply threshold rises from 500 to 1500. The mode e
 Inspect the mode:
 
 ```js
-JSON.stringify(Memory.rooms['W21S18'].energyOverflow);
+JSON.stringify(Memory.rooms['W11S18'].energyOverflow);
 ```
 
 ### Defense and limitations
