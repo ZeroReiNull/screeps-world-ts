@@ -6,7 +6,7 @@ export function runDefense(state: RoomState): void {
   const { room, towers, hostiles } = state;
   const cfg = settings(room);
   if (threatPower(hostiles) > 0) room.memory.lastThreat = Game.time;
-  const healers = hostiles.filter((c) => c.getActiveBodyparts(HEAL) > 0);
+  const healers = hostiles.filter(c => c.getActiveBodyparts(HEAL) > 0);
   for (const tower of towers) {
     if (tower.store[RESOURCE_ENERGY] < TOWER_ENERGY_COST) continue;
     if (hostiles.length) {
@@ -14,55 +14,25 @@ export function runDefense(state: RoomState): void {
       if (target) tower.attack(target);
       continue;
     }
-    const injured = tower.pos.findClosestByRange(state.creeps.filter((c) => c.hits < c.hitsMax));
-    if (injured) {
-      tower.heal(injured);
-      continue;
-    }
+    const injured = tower.pos.findClosestByRange(state.creeps.filter(c => c.hits < c.hitsMax));
+    if (injured) { tower.heal(injured); continue; }
     if (tower.store[RESOURCE_ENERGY] < cfg.towerRepairReserve || Game.time % 10 !== 0) continue;
-    const repair = tower.pos.findClosestByRange(
-      state.structures.filter((s) => s.hits < repairLimit(s, room)),
-    );
+    const repair = tower.pos.findClosestByRange(state.structures.filter(s => s.hits < repairLimit(s, room)));
     if (repair) tower.repair(repair);
   }
   const controller = room.controller;
-  if (
-    !controller?.my ||
-    controller.safeMode ||
-    controller.safeModeCooldown ||
-    !controller.safeModeAvailable ||
-    controller.upgradeBlocked ||
-    !threatPower(hostiles)
-  )
-    return;
-  const critical = state.structures.filter(
-    (s) =>
-      'my' in s &&
-      s.my &&
-      (s.structureType === STRUCTURE_SPAWN ||
-        s.structureType === STRUCTURE_STORAGE ||
-        s.structureType === STRUCTURE_TOWER),
-  );
+  if (!controller?.my || controller.safeMode || controller.safeModeCooldown || !controller.safeModeAvailable
+    || controller.upgradeBlocked || !threatPower(hostiles)) return;
+  const critical = state.structures.filter(s => 'my' in s && s.my
+    && (s.structureType === STRUCTURE_SPAWN || s.structureType === STRUCTURE_STORAGE || s.structureType === STRUCTURE_TOWER));
   // Safe mode is a last line of defense when armed enemies reach essential structures.
-  const danger = hostiles.some(
-    (c) => threatPower([c]) > 0 && critical.some((s) => c.pos.inRangeTo(s, 3)),
-  );
-  const economy = state.creeps.filter((c) => c.memory.role !== 'defender' && !c.spawning);
-  const attackedEconomy = economy.filter(
-    (c) =>
-      c.hits < c.hitsMax &&
-      !protectedAt(c) &&
-      hostiles.some(
-        (enemy) =>
-          canAttackCreeps(enemy) &&
-          enemy.pos.inRangeTo(c, enemy.getActiveBodyparts(RANGED_ATTACK) > 0 ? 3 : 1),
-      ),
-  );
-  const feeders = economy.filter(
-    (c) => c.memory.role === 'worker' || c.memory.role === 'miner' || c.memory.role === 'hauler',
-  );
-  const economyDanger =
-    attackedEconomy.length >= 2 || (feeders.length === 1 && attackedEconomy.includes(feeders[0]));
+  const danger = hostiles.some(c => threatPower([c]) > 0 && critical.some(s => c.pos.inRangeTo(s, 3)));
+  const economy = state.creeps.filter(c => c.memory.role !== 'defender' && !c.spawning);
+  const attackedEconomy = economy.filter(c => c.hits < c.hitsMax && !protectedAt(c)
+    && hostiles.some(enemy => canAttackCreeps(enemy) && enemy.pos.inRangeTo(c, enemy.getActiveBodyparts(RANGED_ATTACK) > 0 ? 3 : 1)));
+  const feeders = economy.filter(c => c.memory.role === 'worker' || c.memory.role === 'miner' || c.memory.role === 'hauler');
+  const economyDanger = attackedEconomy.length >= 2
+    || (feeders.length === 1 && attackedEconomy.includes(feeders[0]));
   if (danger || economyDanger) {
     const result = controller.activateSafeMode();
     if (result === OK) console.log(`[defense ${room.name}] Safe mode activated`);

@@ -1,4 +1,4 @@
-import { optionalCpu, finishCpu } from './core/cpu';
+import { optionalTask, finishCpu } from './core/cpu';
 import type { RoomState } from './core/room';
 import { retreatEconomy } from './core/safety';
 import { memory } from './core/memory';
@@ -15,21 +15,14 @@ import { RoleDefender } from './roles/RoleDefender';
 import { RoleMineralMiner } from './roles/RoleMineralMiner';
 import { type Role } from './config';
 const roles: Record<Role, { run(creep: Creep): void }> = {
-  worker: RoleWorker,
-  miner: RoleMiner,
-  hauler: RoleHauler,
-  upgrader: RoleUpgrader,
-  defender: RoleDefender,
-  mineralMiner: RoleMineralMiner,
+  worker: RoleWorker, miner: RoleMiner, hauler: RoleHauler, upgrader: RoleUpgrader,
+  defender: RoleDefender, mineralMiner: RoleMineralMiner,
 };
 let tickCompleted = true;
 function guard(label: string, task: () => void): void {
-  try {
-    task();
-  } catch (error) {
+  try { task(); } catch (error) {
     tickCompleted = false;
-    if (Game.time % 25 === 0)
-      console.log(`[${label}] ${error instanceof Error ? error.stack : String(error)}`);
+    if (Game.time % 25 === 0) console.log(`[${label}] ${error instanceof Error ? error.stack : String(error)}`);
   }
 }
 export function loop(): void {
@@ -44,6 +37,7 @@ export function loop(): void {
       guard(`${room.name}/defense`, () => runDefense(state));
 
       guard(`${room.name}/spawn`, () => spawn.runRoom(state));
+
     });
   }
   for (const creep of Object.values(Game.creeps)) {
@@ -53,9 +47,12 @@ export function loop(): void {
       if (!retreatEconomy(creep)) roles[creep.memory.role].run(creep);
     });
   }
-  for (const state of states) {
+  // Rotate room order so optional planning is not always granted to the first room.
+  const offset = states.length ? Game.time % states.length : 0;
+  const scheduled = [...states.slice(offset), ...states.slice(0, offset)];
+  for (const state of scheduled) {
     guard(`${state.room.name}/structures`, () => runStructures(state));
-    if (optionalCpu()) guard(`${state.room.name}/planner`, () => planRoom(state));
+    guard(`${state.room.name}/planner`, () => optionalTask(`planner:${state.room.name}`, () => planRoom(state)));
   }
   guard('cpu', () => finishCpu(states, tickCompleted));
 }

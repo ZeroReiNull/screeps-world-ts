@@ -4,16 +4,11 @@ declare global {
   const console: { log(...values: unknown[]): void };
   interface Memory {
     cpuPolicy?: { generatePixel?: boolean };
-    cpuStats?: {
-      tick: number;
-      used: number;
-      average: number;
-      bucket: number;
-      recovering: boolean;
-      safeTicks: number;
-      pixelResult?: number;
-      lastPixel?: number;
-    };
+    cpuTaskCosts?: Record<string, number>;
+    cpuHistory?: { limit: number; samples: number[] };
+    cpuStats?: { tick: number; used: number; average: number; bucket: number; recovering: boolean;
+      safeTicks: number; stableTicks?: number; samples?: number; peak?: number; peakEver?: number;
+      overLimitTicks?: number; pixelReason?: string; pixelResult?: number; lastPixel?: number };
   }
   interface CreepMemory {
     role: Role;
@@ -32,14 +27,7 @@ declare global {
     haulPaths?: Record<string, { distance: number; tick: number; anchor: string }>;
     planErrors?: number;
     lastThreat?: number;
-    stats?: {
-      tick: number;
-      rcl: number;
-      energy: number;
-      stored: number;
-      hostiles: number;
-      targets: Record<string, number>;
-    };
+    stats?: { tick: number; rcl: number; energy: number; stored: number; hostiles: number; targets: Record<string, number> };
     /** Opt-in production: resource must be a valid factory recipe, labs must already contain reagents. */
     factoryProduct?: CommoditiesTypes;
     labReaction?: { inputs: [Id<StructureLab>, Id<StructureLab>]; outputs: Id<StructureLab>[] };
