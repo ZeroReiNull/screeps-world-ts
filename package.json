@@ -4,9 +4,13 @@
   "description": "My scripts for Screeps: World",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --noEmit && node esbuild.config.mjs",
-    "push": "node --env-file=.env scripts/deploy.mjs",
-    "watch": "node --env-file=.env scripts/watch.mjs"
+    "build": "tsc && node scripts/build.mjs",
+    "deploy": "node --env-file=.env scripts/deploy.mjs",
+    "watch": "node --env-file=.env scripts/watch.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "screeps"
@@ -15,13 +19,17 @@
   "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
-    "@types/lodash": "^3.10.1",
+    "@types/node": "^26.6.5",
     "@types/screeps": "^3.4.0",
     "chokidar": "^5.0.0",
     "esbuild": "^0.28.2",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
   },
   "dependencies": {
     "screeps-api": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   }
 }

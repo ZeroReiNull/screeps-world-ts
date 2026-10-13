@@ -5,12 +5,11 @@ await esbuild.build({
   outfile: "dist/main.js",
   bundle: true,
   platform: "node",
-  target: "node24",
+  target: "es2020",
   format: "cjs",
   sourcemap: "external",
   sourcesContent: true,
   minify: true,
   treeShaking: true,
-  external: ['lodash'],
   logLevel: "info"
 });

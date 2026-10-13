@@ -1,13 +1,10 @@
 export class memory {
-    /**
-     * Clear memory of dead creeps to prevent memory leaks
-     */
-    public static clearDeadCreeps(): void {
-        for (const name in Memory.creeps) {
-            if (!(name in Game.creeps)) {
-                delete Memory.creeps[name];
-                console.log(`[Memory] 🗑️ Cleared memory for dead creep: ${name}`);
-            }
-        }
+  static clearDeadCreeps(): void {
+    Memory.creeps ??= {};
+    Memory.rooms ??= {};
+    const pending = new Set(Object.values(Game.spawns).flatMap(s => s.spawning ? [s.spawning.name] : []));
+    for (const name of Object.keys(Memory.creeps)) {
+      if (!Game.creeps[name] && !pending.has(name)) delete Memory.creeps[name];
     }
+  }
 }

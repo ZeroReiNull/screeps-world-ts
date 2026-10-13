@@ -1,40 +1,41 @@
 import { memory } from './core/memory';
 import { spawn } from './core/spawn';
+import { inspectRoom } from './core/room';
+import { planRoom } from './core/planner';
+import { runDefense } from './core/defense';
+import { runStructures } from './core/structures';
 import { RoleWorker } from './roles/RoleWorker';
 import { RoleMiner } from './roles/RoleMiner';
-import { ROLE_WORKER, ROLE_MINER } from './config';
-
+import { RoleHauler } from './roles/RoleHauler';
+import { RoleUpgrader } from './roles/RoleUpgrader';
+import { RoleDefender } from './roles/RoleDefender';
+import { RoleMineralMiner } from './roles/RoleMineralMiner';
+import { CONFIG, type Role } from './config';
+const roles: Record<Role, { run(creep: Creep): void }> = {
+  worker: RoleWorker, miner: RoleMiner, hauler: RoleHauler, upgrader: RoleUpgrader,
+  defender: RoleDefender, mineralMiner: RoleMineralMiner,
+};
+function guard(label: string, task: () => void): void {
+  try { task(); } catch (error) {
+    if (Game.time % 25 === 0) console.log(`[${label}] ${error instanceof Error ? error.stack : String(error)}`);
+  }
+}
 export function loop(): void {
-    // 1. Maintain memory hygiene
-    memory.clearDeadCreeps();
-
-    // 2. Drive spawning operations across all visible rooms
-    for (const spawnName in Game.spawns) {
-        spawn.run(Game.spawns[spawnName]);
-    }
-
-    // 3. Execute creep behavioral logic
-    for (const name in Game.creeps) {
-        const creep = Game.creeps[name];
-        if (creep.spawning) continue;
-
-        switch (creep.memory.role) {
-            case ROLE_WORKER:
-                RoleWorker.run(creep);
-                break;
-            case ROLE_MINER:
-                RoleMiner.run(creep);
-                break;
-            default:
-                break;
-        }
-    }
-
-    // 4. Generate a Pixel if possible
-    if (typeof Game.cpu.generatePixel === 'function' && Game.cpu.bucket >= 10000) {
-        const res = Game.cpu.generatePixel();
-        if (res === OK) {
-            console.log(`Successfully minted 1 Pixel at tick ${Game.time}!`);
-        }
-    }
+  memory.clearDeadCreeps();
+  for (const room of Object.values(Game.rooms)) {
+    if (!room.controller?.my) continue;
+    guard(room.name, () => {
+      const state = inspectRoom(room);
+      guard(`${room.name}/defense`, () => runDefense(state));
+      guard(`${room.name}/structures`, () => runStructures(state));
+      guard(`${room.name}/spawn`, () => spawn.runRoom(state));
+      if (Game.cpu.bucket > 1000) guard(`${room.name}/planner`, () => planRoom(state));
+    });
+  }
+  for (const creep of Object.values(Game.creeps)) {
+    if (creep.spawning) continue;
+    if (!roles[creep.memory.role]) creep.memory.role = 'worker';
+    guard(creep.name, () => roles[creep.memory.role].run(creep));
+  }
+  if (CONFIG.generatePixel && typeof Game.cpu.generatePixel === 'function' && Game.cpu.bucket >= 10000) Game.cpu.generatePixel();
 }
